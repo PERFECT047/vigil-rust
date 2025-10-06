@@ -1,0 +1,26 @@
+# Rust build output
+/target/
+**/target/
+
+# If using Rust Analyzer
+**/*.rs.bk
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+
+# Environment files
+.env
