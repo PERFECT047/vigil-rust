@@ -7,11 +7,9 @@ pub struct Store {
 
 impl Store {
     pub fn new() -> Result<Self, ConnectionError> {
-       let config = Config::default();
-       let conn = PgConnection::establish(&config.db_url)?;
+        let config = Config::default();
+        let conn = PgConnection::establish(&config.db_url)?;
 
-       Ok(Self {
-           conn
-       })
-   }
+        Ok(Self { conn })
+    }
 }

@@ -1,11 +1,9 @@
-use std::env;
 use dotenvy::dotenv;
-
+use std::env;
 
 pub struct Config {
     pub db_url: String,
 }
-
 
 impl Default for Config {
     fn default() -> Self {

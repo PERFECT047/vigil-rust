@@ -1,5 +1,8 @@
 use poem::{
-    get, handler, listener::TcpListener, post, web::{Json, Path}, Route, Server
+    Route, Server, get, handler,
+    listener::TcpListener,
+    post,
+    web::{Json, Path},
 };
 use request_inputs::{CreateUserInput, CreateWebsiteInput};
 use response_outputs::{CreateUserOutput, CreateWebsiteOutput, GetWebsiteOutput, SigninOutput};
@@ -11,9 +14,7 @@ pub mod response_outputs;
 fn get_website(Path(id): Path<String>) -> Json<GetWebsiteOutput> {
     let mut s = Store::new().unwrap();
     let website = s.get_website(id).unwrap();
-    Json(GetWebsiteOutput{
-        url: website.url
-    })
+    Json(GetWebsiteOutput { url: website.url })
 }
 
 #[handler]
@@ -21,10 +22,8 @@ fn sign_up(Json(data): Json<CreateUserInput>) -> Json<CreateUserOutput> {
     let mut s = Store::new().unwrap();
     let id = s.sign_up_user(data.username, data.password).unwrap();
 
-    let response = CreateUserOutput {
-        id
-    };
-    
+    let response = CreateUserOutput { id };
+
     Json(response)
 }
 
@@ -34,20 +33,23 @@ fn sign_in(Json(data): Json<CreateUserInput>) -> Json<SigninOutput> {
     let _exists = s.sign_in_user(data.username, data.password).unwrap();
 
     let response = SigninOutput {
-        jwt: String::from("siddhartha")
+        jwt: String::from("siddhartha"),
     };
-    
+
     Json(response)
 }
 
 #[handler]
 fn create_website(Json(data): Json<CreateWebsiteInput>) -> Json<CreateWebsiteOutput> {
     let mut s = Store::new().unwrap();
-    let website = s.create_website(String::from("b8c7a13c-e518-4888-b196-db0b159a8723"), data.url).unwrap();
+    let website = s
+        .create_website(
+            String::from("b8c7a13c-e518-4888-b196-db0b159a8723"),
+            data.url,
+        )
+        .unwrap();
 
-    let response = CreateWebsiteOutput {
-        id: website.id
-    };
+    let response = CreateWebsiteOutput { id: website.id };
     Json(response)
 }
 
