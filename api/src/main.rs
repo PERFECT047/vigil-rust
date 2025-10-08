@@ -1,17 +1,16 @@
 use std::sync::{Arc, Mutex};
 
-use poem::{
-    get, listener::TcpListener, post, EndpointExt, Route, Server
-};
-
+use poem::{EndpointExt, Route, Server, get, listener::TcpListener, post};
 
 use store::store::Store;
 
-use crate::routes::{user::user_auth::{sign_in, sign_up}, website::website::{create_website, get_website}};
+use crate::routes::{
+    user::user_auth::{sign_in, sign_up},
+    website::website::{create_website, get_website},
+};
 pub mod request_inputs;
 pub mod response_outputs;
 pub mod routes;
-
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<(), std::io::Error> {

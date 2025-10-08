@@ -8,3 +8,5 @@ poem = "3.1.12"
 serde = { version = "1.0.228", features = ["derive"] }
 tokio = { version = "1.47.1", features = ["full"] }
 store = { path = "../store" }
+dotenvy = "0.15.7"
+jsonwebtoken = { version = "10.0.0", features = ["rust_crypto"] }
