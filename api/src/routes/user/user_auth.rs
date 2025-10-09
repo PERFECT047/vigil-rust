@@ -1,3 +1,4 @@
+use crate::state::AppState;
 use crate::{
     request_inputs::{UserSigninInput, UserSignupInput},
     response_outputs::{SignUpOutput, SigninOutput},
@@ -10,7 +11,6 @@ use poem::{
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use crate::state::AppState;
 use tokio::task;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -54,7 +54,9 @@ pub async fn sign_in(
 
     let res = task::spawn_blocking(move || {
         let mut locked = store_arc.lock().unwrap();
-        locked.sign_in_user(username, password).map_err(|_| Error::from_status(StatusCode::UNAUTHORIZED))
+        locked
+            .sign_in_user(username, password)
+            .map_err(|_| Error::from_status(StatusCode::UNAUTHORIZED))
     })
     .await
     .map_err(|_| Error::from_status(StatusCode::INTERNAL_SERVER_ERROR))?;
@@ -69,7 +71,11 @@ pub async fn sign_in(
         exp: jwt_expiry,
     };
 
-    let token = encode(&Header::default(), &my_claims, &EncodingKey::from_secret(jwt_secret.as_ref()))
+    let token = encode(
+        &Header::default(),
+        &my_claims,
+        &EncodingKey::from_secret(jwt_secret.as_ref()),
+    )
     .map_err(|_| Error::from_status(StatusCode::FORBIDDEN))?;
 
     let response = SigninOutput { jwt: token };

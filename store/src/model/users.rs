@@ -1,9 +1,9 @@
 use crate::store::Store;
-use diesel::prelude::*;
-use uuid::Uuid;
-use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use rand::rngs::OsRng;
 use argon2::password_hash::SaltString;
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use diesel::prelude::*;
+use rand::rngs::OsRng;
+use uuid::Uuid;
 
 #[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = crate::schema::user)]
@@ -20,8 +20,8 @@ impl Store {
         username: String,
         password: String,
     ) -> Result<String, diesel::result::Error> {
-    let mut rng = OsRng;
-    let salt = SaltString::generate(&mut rng);
+        let mut rng = OsRng;
+        let salt = SaltString::generate(&mut rng);
         let argon2 = Argon2::default();
         let password_hash = argon2
             .hash_password(password.as_bytes(), &salt)
