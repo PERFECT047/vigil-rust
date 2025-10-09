@@ -1,10 +1,7 @@
-use std::sync::{Arc, Mutex};
-
 use crate::{
     request_inputs::{UserSigninInput, UserSignupInput},
     response_outputs::{SignUpOutput, SigninOutput},
 };
-use dotenvy::dotenv;
 use jsonwebtoken::{EncodingKey, Header, encode};
 use poem::{
     Error, handler,
@@ -12,8 +9,9 @@ use poem::{
     web::{Data, Json},
 };
 use serde::{Deserialize, Serialize};
-use std::env;
-use store::store::Store;
+use std::sync::Arc;
+use crate::state::AppState;
+use tokio::task;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
@@ -22,52 +20,58 @@ pub struct Claims {
 }
 
 #[handler]
-pub fn sign_up(
+pub async fn sign_up(
     Json(data): Json<UserSignupInput>,
-    Data(s): Data<&Arc<Mutex<Store>>>,
+    Data(state): Data<&Arc<AppState>>,
 ) -> Result<Json<SignUpOutput>, Error> {
-    let mut locked_s = s.lock().unwrap();
-    let id = locked_s
-        .sign_up_user(data.username, data.password)
-        .map_err(|_| Error::from_status(StatusCode::CONFLICT))?;
+    // Offload blocking DB work to a dedicated blocking thread
+    let store_arc = state.store.clone();
+    let username = data.username.clone();
+    let password = data.password.clone();
 
+    let res = task::spawn_blocking(move || {
+        let mut locked = store_arc.lock().unwrap();
+        locked
+            .sign_up_user(username, password)
+            .map_err(|_| Error::from_status(StatusCode::CONFLICT))
+    })
+    .await
+    .map_err(|_| Error::from_status(StatusCode::INTERNAL_SERVER_ERROR))?;
+
+    let id = res?;
     let response = SignUpOutput { id };
     Ok(Json(response))
 }
 
 #[handler]
-pub fn sign_in(
+pub async fn sign_in(
     Json(data): Json<UserSigninInput>,
-    Data(s): Data<&Arc<Mutex<Store>>>,
+    Data(state): Data<&Arc<AppState>>,
 ) -> Result<Json<SigninOutput>, Error> {
-    let mut locked_s = s.lock().unwrap();
-    let user = locked_s.sign_in_user(data.username, data.password);
+    let store_arc = state.store.clone();
+    let username = data.username.clone();
+    let password = data.password.clone();
 
-    match user {
-        Ok(user) => {
-            dotenv().ok();
-            let my_claims = Claims {
-                sub: user,
-                exp: env::var("JWT_EXPIRY_SECONDS")
-                    .unwrap_or_else(|_| panic!("JWT_EXPIRY_SECONDS must be set"))
-                    .parse::<usize>()
-                    .expect("JWT_EXPIRY_SECONDS must be a valid usize"),
-            };
+    let res = task::spawn_blocking(move || {
+        let mut locked = store_arc.lock().unwrap();
+        locked.sign_in_user(username, password).map_err(|_| Error::from_status(StatusCode::UNAUTHORIZED))
+    })
+    .await
+    .map_err(|_| Error::from_status(StatusCode::INTERNAL_SERVER_ERROR))?;
 
-            let token = encode(
-                &Header::default(),
-                &my_claims,
-                &EncodingKey::from_secret(
-                    env::var("JWT_SECRET")
-                        .unwrap_or_else(|_| panic!("JWT_SECRET must be set"))
-                        .as_ref(),
-                ),
-            )
-            .map_err(|_| Error::from_status(StatusCode::FORBIDDEN))?;
-            let response = SigninOutput { jwt: token };
-            Ok(Json(response))
-        }
+    let user_id = res?;
 
-        Err(_e) => Err(Error::from_status(StatusCode::UNAUTHORIZED)),
-    }
+    let jwt_expiry = state.jwt_expiry_seconds;
+    let jwt_secret = state.jwt_secret.clone();
+
+    let my_claims = Claims {
+        sub: user_id,
+        exp: jwt_expiry,
+    };
+
+    let token = encode(&Header::default(), &my_claims, &EncodingKey::from_secret(jwt_secret.as_ref()))
+    .map_err(|_| Error::from_status(StatusCode::FORBIDDEN))?;
+
+    let response = SigninOutput { jwt: token };
+    Ok(Json(response))
 }

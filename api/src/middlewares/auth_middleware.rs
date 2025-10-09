@@ -1,5 +1,4 @@
 use crate::routes::user::user_auth::Claims;
-use dotenvy::dotenv;
 use jsonwebtoken::{DecodingKey, Validation, decode};
 use poem::{Error, FromRequest, Request, RequestBody, http::StatusCode};
 use std::env;
@@ -8,8 +7,6 @@ pub struct UserData(pub String);
 
 impl<'a> FromRequest<'a> for UserData {
     async fn from_request(req: &'a Request, _body: &mut RequestBody) -> Result<Self, Error> {
-        dotenv().ok();
-
         let token = req
             .header("Authorization")
             .map(|value| value.to_string())

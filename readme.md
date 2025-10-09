@@ -68,6 +68,34 @@ Feature flags
 
 - `store` uses Diesel with Postgres enabled by default in the current manifest. If you want SQLite or another backend, update `store/Cargo.toml` and adjust migrations accordingly.
 
+## Environment variables
+
+Vigil uses a single `.env` file at the workspace root for local development. A sample file is provided as `.env.example`.
+
+Steps to use:
+
+1. Copy `.env.example` to `.env` at the repository root:
+
+```bash
+cp .env.example .env
+# edit .env and fill in real credentials
+```
+
+2. Start the API (it will load `.env` when it starts):
+
+```bash
+cargo run -p api
+```
+
+Important variables (from `.env.example`):
+
+- `DATABASE_URL` — Postgres connection string used by Diesel.
+- `JWT_SECRET` — secret key used to sign JWT tokens. Keep this secret in production.
+- `JWT_EXPIRY_SECONDS` — token expiry in seconds (defaults to `3600` if not set).
+
+For production, do not use `.env` files — set environment variables in your deployment platform or use a secrets manager.
+
+
 ## AI integration notes
 
 Vigil integrates AI modules for analysis and pain-point recognition. Design notes:
