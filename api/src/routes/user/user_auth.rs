@@ -15,9 +15,9 @@ use serde::{Deserialize, Serialize};
 use std::env;
 use store::store::Store;
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
-    sub: String,
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Claims {
+    pub sub: String,
     exp: usize,
 }
 

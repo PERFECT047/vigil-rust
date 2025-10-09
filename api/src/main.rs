@@ -8,13 +8,14 @@ use crate::routes::{
     user::user_auth::{sign_in, sign_up},
     website::website::{create_website, get_website},
 };
+pub mod middlewares;
 pub mod request_inputs;
 pub mod response_outputs;
 pub mod routes;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<(), std::io::Error> {
-    let s = Arc::new(Mutex::new(Store::new().unwrap()));
+    let s = Arc::new(Mutex::new(Store::new()));
 
     let app = Route::new()
         .at("/website/:website_id", get(get_website))

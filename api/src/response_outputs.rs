@@ -20,4 +20,6 @@ pub struct CreateWebsiteOutput {
 #[derive(Serialize, Deserialize)]
 pub struct GetWebsiteOutput {
     pub url: String,
+    pub id: String,
+    pub user_id: String,
 }
