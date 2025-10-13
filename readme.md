@@ -21,11 +21,15 @@ Vigil collects, indexes, analyzes, and acts on logs, metrics, and events. The pr
 - AI-assisted analysis: contextual log summarization, anomaly explanation, and suggested remediation steps.
 - Security & observability: RBAC-ready, audit logs, rate-limiting, and telemetry for Vigil itself.
 
-## Project layout
+## Project architecture
 
-- `api/` — HTTP API server and auth layer. Uses Poem (or Actix / Axum depending on evolution).
-- `store/` — Data access layer using Diesel (Postgres enabled). Migrations live in `store/migrations/`.
-- `target/` — Cargo build artifacts.
+**DataBase Architecture**
+
+![alt text](db_schema.png)
+
+**Backend Architecture**
+
+![alt text](be_arch.png)
 
 ## Quickstart (local development)
 
